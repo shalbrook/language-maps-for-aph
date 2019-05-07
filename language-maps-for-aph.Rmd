@@ -1,0 +1,118 @@
+---
+title: "Language Maps for Austin Public Health"
+output: html_notebook
+---
+This R code downloads language data by census tract for Travis County, Texas, using 2013-2017 5-year ACS estimates. Then it maps those languages alongside Austin Public Health facilities. The goal is to reveal any areas that might be underserved.
+
+Helpful websites:
+
+* https://walkerke.github.io/tidycensus/articles/basic-usage.html
+* https://walkerke.github.io/tidycensus/articles/spatial-data.html
+* https://map-rfun.library.duke.edu/02_choropleth.html
+
+
+
+```{r}
+library(tidyverse)
+library(tidycensus)
+library(viridis)
+library(sf)
+options(tigris_use_cache = TRUE)
+```
+First read in Austin Public Health Locations data. This is found on the city open data portal (link?) but first you must break out lat and lon fields. Currently the dataset has lat and lon as part of the address field. Also added one more location, and then saved as an Excel file for the import.
+
+```{r}
+Austin_Public_Health_Locations <- read_excel("Austin_Public_Health_Locations.xlsx")
+```
+
+Use tidycensus package to connect via Census API to download numbers of language speakers in each census tract. Include a variable for summary_var (total number of people in the census tract) and calculate percentages. Those percentage values will be used as the highlighted attribute for each census tract.
+
+```{r}
+spanish <- get_acs(geography = "tract", variables = "C16001_003", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+chinese <- get_acs(geography = "tract", variables = "C16001_021", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+vietnamese <- get_acs(geography = "tract", variables = "C16001_024", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+otherasian <- get_acs(geography = "tract", variables = "C16001_030", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+frenchhaitian <- get_acs(geography = "tract", variables = "C16001_006", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+german <- get_acs(geography = "tract", variables = "C16001_009", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+russian <- get_acs(geography = "tract", variables = "C16001_012", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+otherindoeuropean <- get_acs(geography = "tract", variables = "C16001_015", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+korean <- get_acs(geography = "tract", variables = "C16001_018", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+tagalog <- get_acs(geography = "tract", variables = "C16001_027", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+arabic <- get_acs(geography = "tract", variables = "C16001_033", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+other <- get_acs(geography = "tract", variables = "C16001_036", year = 2017, state = 48, county = c("Travis"), summary_var = "C16001_001", geometry = TRUE, survey = "acs5") %>% mutate(pct = round(100 * (estimate / summary_est), digits = 1))
+```
+
+This builds a new field in the data file, converting lat and lon fields into simple feature polygon geometry.
+
+```{r}
+aph <- st_as_sf(Austin_Public_Health_Locations, coords = c("lon", "lat"),  crs = st_crs(spanish))
+```
+
+Produce a table of all languages and total # speakers.
+
+```{r}
+totals <- tribble(~Lang, ~Total, "Spanish", sum(spanish$estimate), "Chinese", sum(chinese$estimate))
+totals <- add_row(totals, Lang = "Vietnamese", Total = sum(vietnamese$estimate))
+totals <- add_row(totals, Lang = "German", Total = sum(german$estimate))
+totals <- add_row(totals, Lang = "French Haitian or Cajun", Total = sum(frenchhaitian$estimate))
+totals <- add_row(totals, Lang = "Russian Polish Other Slavic", Total = sum(russian$estimate))
+totals <- add_row(totals, Lang = "Other Indo-European", Total = sum(otherindoeuropean$estimate))
+totals <- add_row(totals, Lang = "Korean", Total = sum(korean$estimate))
+totals <- add_row(totals, Lang = "Tagalog", Total = sum(tagalog$estimate))
+totals <- add_row(totals, Lang = "Arabic", Total = sum(arabic$estimate))
+totals <- add_row(totals, Lang = "Other", Total = sum(other$estimate))
+totals <- add_row(totals, Lang = "Other Asian", Total = sum(otherasian$estimate))
+
+# Sort by # of speakers and print the totals.
+totals <- totals %>% arrange(desc(Total))
+totals
+```
+
+Remove tracts from the map with zero speakers. Need to expand this part. For now, just use a filter.
+
+```{r}
+vietnamese <- filter(vietnamese, pct > 0)
+```
+
+Set the color brewer ramp colors. We pick the six monochromatic ramps in RColorBrewer.
+
+```{r}
+library(RColorBrewer)
+reds.pal <- colorRampPalette(brewer.pal(9, "Reds"))
+purples.pal <- colorRampPalette(brewer.pal(9, "Purples"))
+oranges.pal <- colorRampPalette(brewer.pal(9, "Oranges"))
+greys.pal <- colorRampPalette(brewer.pal(9, "Greys"))
+greens.pal <- colorRampPalette(brewer.pal(9, "Greens"))
+blues.pal <- colorRampPalette(brewer.pal(9, "Blues"))
+```
+
+Build the first map, with the top five languages in the city. Map is shown below; larger version on a standalone html page can be found [here](map1.html).
+
+```{r}
+map <- mapview(aph, zcol = "Facility Name", legend = FALSE, col.regions = "yellow", homebutton = FALSE)
+map <- map + mapview(spanish, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map <- map + mapview(otherindoeuropean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+map <- map + mapview(chinese, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
+map <- map + mapview(vietnamese, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
+map <- map + mapview(otherasian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+
+mapshot(map, url = paste0(getwd(), "/map1.html"))
+map
+```
+
+Build the second map, of the bottom seven languages. Map below; final map can also be found [here](map2.html).
+
+```{r}
+map <- mapview(aph, zcol = "Facility Name", legend = FALSE, col.regions = "yellow", homebutton = FALSE)
+map <- map + mapview(frenchhaitian, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map <- map + mapview(korean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+map <- map + mapview(arabic, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
+map <- map + mapview(other, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
+map <- map + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+map <- map + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map <- map + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+
+mapshot(map, url = paste0(getwd(), "/map2.html"))
+map
+```
+

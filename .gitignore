@@ -27,3 +27,5 @@ rsconnect/
 .Rproj.user
 CPIO*
 .DS_Store
+docs/map1_files/
+docs/map2_files/

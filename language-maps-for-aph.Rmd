@@ -103,7 +103,7 @@ map <- map + mapview(chinese, zcol = "pct", col.regions=oranges.pal, homebutton 
 map <- map + mapview(vietnamese, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
 map <- map + mapview(otherasian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
 
-mapshot(map, url = paste0(getwd(), "/map1.html"))
+mapshot(map, url = paste0(getwd(), "/docs/map1.html"))
 map
 ```
 
@@ -119,7 +119,7 @@ map <- map + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = 
 map <- map + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
 map <- map + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
 
-mapshot(map, url = paste0(getwd(), "/map2.html"))
+mapshot(map, url = paste0(getwd(), "/docs/map2.html"))
 map
 ```
 

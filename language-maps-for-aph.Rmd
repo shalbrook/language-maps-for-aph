@@ -1,6 +1,11 @@
 ---
 title: "Language Maps for Austin Public Health"
-output: html_notebook
+#output: html_notebook
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 This R code downloads language data by census tract for Travis County, Texas, using 2013-2017 5-year ACS estimates. Then it maps those languages alongside Austin Public Health facilities. The goal is to reveal any areas that might be underserved.
 
@@ -17,6 +22,8 @@ library(tidyverse)
 library(tidycensus)
 library(viridis)
 library(sf)
+library(readxl)
+library(mapview)
 options(tigris_use_cache = TRUE)
 ```
 First read in Austin Public Health Locations data. This is found on the city open data portal (link?) but first you must break out lat and lon fields. Currently the dataset has lat and lon as part of the address field. Also added one more location, and then saved as an Excel file for the import.

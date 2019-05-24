@@ -14,6 +14,7 @@ Helpful websites:
 * https://walkerke.github.io/tidycensus/articles/basic-usage.html
 * https://walkerke.github.io/tidycensus/articles/spatial-data.html
 * https://map-rfun.library.duke.edu/02_choropleth.html
+* https://r-spatial.github.io/mapview/articles/articles/mapview_02-advanced.html
 
 
 
@@ -78,7 +79,18 @@ totals
 Remove tracts from the map with zero speakers. Need to expand this part. For now, just use a filter.
 
 ```{r}
+spanish <- filter(spanish, pct > 0)
+otherindoeuropean <- filter(otherindoeuropean, pct > 0)
+chinese <- filter(chinese, pct > 0)
 vietnamese <- filter(vietnamese, pct > 0)
+otherasian <- filter(otherasian, pct > 0)
+arabic <- filter(arabic, pct > 0)
+frenchhaitian <- filter(frenchhaitian, pct > 0)
+korean <- filter(korean, pct > 0)
+other <- filter(other, pct > 0)
+russian <- filter(russian, pct > 0)
+german <- filter(german, pct > 0)
+tagalog <- filter(tagalog, pct > 0)
 ```
 
 Set the color brewer ramp colors. We pick the six monochromatic ramps in RColorBrewer.
@@ -96,30 +108,36 @@ blues.pal <- colorRampPalette(brewer.pal(9, "Blues"))
 Build the first map, with the top five languages in the city. Map is shown below; larger version on a standalone html page can be found [here](map1.html).
 
 ```{r}
-map <- mapview(aph, zcol = "Facility Name", legend = FALSE, col.regions = "yellow", homebutton = FALSE)
-map <- map + mapview(spanish, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
-map <- map + mapview(otherindoeuropean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
-map <- map + mapview(chinese, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
-map <- map + mapview(vietnamese, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
-map <- map + mapview(otherasian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+map <- aph %>% filter(`Facility Type` == "WIC Clinic") %>% mapview(zcol = "Facility Name", legend = FALSE, layer.name = "WIC Clinics", col.regions = "green", homebutton = FALSE)
+map <- map + aph %>% filter(`Facility Type` == "Neighborhood Center") %>% mapview(zcol = "Facility Name", legend = FALSE, layer.name = "Neighborhood Centers", col.regions = "blue", homebutton = FALSE)
+map <- map + aph %>% filter(`Facility Type` == "Other Location") %>% mapview(zcol = "Facility Name", legend = FALSE, layer.name = "Other Locations", col.regions = "yellow", homebutton = FALSE)
+```
 
-mapshot(map, url = paste0(getwd(), "/docs/map1.html"))
-map
+
+```{r}
+map1 <- map + mapview(spanish, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map1 <- map1 + mapview(otherindoeuropean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+map1 <- map1 + mapview(chinese, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
+map1 <- map1 + mapview(vietnamese, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+map1 <- map1 + mapview(otherasian, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
+map1 <- map1 + mapview(arabic, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+
+mapshot(map1, url = paste0(getwd(), "/docs/map1.html"))
+map1
 ```
 
 Build the second map, of the bottom seven languages. Map below; final map can also be found [here](map2.html).
 
 ```{r}
-map <- mapview(aph, zcol = "Facility Name", legend = FALSE, col.regions = "yellow", homebutton = FALSE)
-map <- map + mapview(frenchhaitian, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
-map <- map + mapview(korean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
-map <- map + mapview(arabic, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
-map <- map + mapview(other, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
-map <- map + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
-map <- map + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
-map <- map + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+map2 <- map + mapview(frenchhaitian, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map2 <- map2 + mapview(korean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+map2 <- map2 + mapview(arabic, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
+map2 <- map2 + mapview(other, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
+map2 <- map2 + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+map2 <- map2 + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+map2 <- map2 + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
 
-mapshot(map, url = paste0(getwd(), "/docs/map2.html"))
-map
+mapshot(map2, url = paste0(getwd(), "/docs/map2.html"))
+map2
 ```
 

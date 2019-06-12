@@ -27,7 +27,7 @@ library(readxl)
 library(mapview)
 options(tigris_use_cache = TRUE)
 ```
-First read in Austin Public Health Locations data. This is found on the city open data portal (link?) but first you must break out lat and lon fields. Currently the dataset has lat and lon as part of the address field. Also added one more location, and then saved as an Excel file for the import.
+First read in Austin Public Health Locations data. This is found on the city open data portal (link?) but first you must break out lat and lon fields. Currently the dataset has lat and lon as part of the address field. Also added and geocoded a couple more locations, and then saved as an Excel file for the import.
 
 ```{r}
 Austin_Public_Health_Locations <- read_excel("Austin_Public_Health_Locations.xlsx")
@@ -120,7 +120,6 @@ map1 <- map1 + mapview(otherindoeuropean, zcol = "pct", col.regions=purples.pal,
 map1 <- map1 + mapview(chinese, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
 map1 <- map1 + mapview(vietnamese, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
 map1 <- map1 + mapview(otherasian, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
-map1 <- map1 + mapview(arabic, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
 
 mapshot(map1, url = paste0(getwd(), "/docs/map1.html"))
 map1
@@ -133,9 +132,10 @@ map2 <- map + mapview(frenchhaitian, zcol = "pct", col.regions=reds.pal, homebut
 map2 <- map2 + mapview(korean, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
 map2 <- map2 + mapview(arabic, zcol = "pct", col.regions=oranges.pal, homebutton = FALSE)
 map2 <- map2 + mapview(other, zcol = "pct", col.regions=greens.pal, homebutton = FALSE)
-map2 <- map2 + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
-map2 <- map2 + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
-map2 <- map2 + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
+# reducing to just the top 9 languages
+#map2 <- map2 + mapview(russian, zcol = "pct", col.regions=blues.pal, homebutton = FALSE)
+#map2 <- map2 + mapview(german, zcol = "pct", col.regions=reds.pal, homebutton = FALSE)
+#map2 <- map2 + mapview(tagalog, zcol = "pct", col.regions=purples.pal, homebutton = FALSE)
 
 mapshot(map2, url = paste0(getwd(), "/docs/map2.html"))
 map2
